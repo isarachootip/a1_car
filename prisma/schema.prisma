@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Branch {
+  id        String          @id @default(cuid())
+  code      String          @unique
+  name      String
+  phone     String
+  staff     StaffUser[]
+  orders    HandoverOrder[]
+  createdAt DateTime        @default(now())
+}
+
+model StaffUser {
+  id        String          @id @default(cuid())
+  name      String
+  role      String          @default("STAFF")
+  branchId  String
+  branch    Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  orders    HandoverOrder[]
+  createdAt DateTime        @default(now())
+}
+
+model HandoverOrder {
+  id                       String         @id @default(cuid())
+  docNumber                String         @unique
+  publicToken              String         @unique @default(uuid())
+  status                   String         @default("DRAFT_PICKUP")
+  branchId                 String
+  branch                   Branch         @relation(fields: [branchId], references: [id])
+  staffId                  String
+  staff                    StaffUser      @relation(fields: [staffId], references: [id])
+  customerName             String
+  customerPhone            String
+  vehicleBrandModel        String
+  licensePlate             String
+  vehicleColor             String
+  pickupMileage            Int
+  pickupFuelLevel          String
+  serviceStandard          Boolean        @default(false)
+  serviceOilFluid          Boolean        @default(false)
+  serviceTireAlignment     Boolean        @default(false)
+  serviceBrakeSuspension   Boolean        @default(false)
+  serviceAdditionalNote    String         @default("")
+  invRegistrationBook      Boolean        @default(true)
+  invSpareKeyRemote        Boolean        @default(false)
+  invSpareTireJack         Boolean        @default(true)
+  invDashcamTollCard       Boolean        @default(true)
+  invOtherValuables        String         @default("")
+  pickupCustomerSig        String?
+  pickupCustomerSignerName String?
+  pickupCustomerSignedAt   DateTime?
+  pickupStaffSig           String?
+  pickupStaffSignerName    String?
+  pickupStaffSignedAt      DateTime?
+  deliveryMileage          Int?
+  deliveryFuelLevel        String?
+  deliveryCustomerSig      String?
+  deliveryCustomerSigner   String?
+  deliveryCustomerSignedAt DateTime?
+  deliveryStaffSig         String?
+  deliveryStaffSigner      String?
+  deliveryStaffSignedAt    DateTime?
+  damageMarks              DamageMark[]
+  photos                   VehiclePhoto[]
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+}
+
+model DamageMark {
+  id        String        @id @default(cuid())
+  orderId   String
+  order     HandoverOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  phase     String        @default("PICKUP")
+  zone      String
+  type      String
+  posX      Float
+  posY      Float
+  note      String        @default("")
+  createdAt DateTime      @default(now())
+}
+
+model VehiclePhoto {
+  id        String        @id @default(cuid())
+  orderId   String
+  order     HandoverOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  phase     String        @default("PICKUP")
+  category  String
+  fileUrl   String
+  caption   String        @default("")
+  takenAt   DateTime      @default(now())
+}
