@@ -7,6 +7,7 @@ import {
   HandoverPhase,
   OrderStatus,
   PhotoCategory,
+  ServiceLocationType,
 } from "../types/handover";
 
 export type HandoverOrderWithRelations = Prisma.HandoverOrderGetPayload<{
@@ -26,6 +27,10 @@ export function mapOrderToDTO(
     docNumber: row.docNumber,
     publicToken: row.publicToken,
     status: row.status as OrderStatus,
+    serviceLocationType: (row.serviceLocationType as ServiceLocationType) ?? "ON_SITE",
+    pickupLocation: row.pickupLocation ?? "",
+    pickupMapUrl: row.pickupMapUrl ?? "",
+    scheduledAt: row.scheduledAt ?? "",
     branchId: row.branchId,
     branch: {
       id: row.branch.id,

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Camera, CheckCircle2, Trash2, Sparkles } from "lucide-react";
+import { Camera, Image as ImageIcon, CheckCircle2, Trash2, Sparkles } from "lucide-react";
 import { formatThaiDate, formatThaiTime } from "@/lib/domain/docNumber";
 import {
   PHOTO_CATEGORY_LABELS,
@@ -15,6 +15,7 @@ interface PhotoCategoryCardProps {
   photos: VehiclePhotoRecord[];
   disabled: boolean;
   isUploading: boolean;
+  isNextGuided: boolean;
   onFileSelect: (file: File | undefined) => void;
   onDemoPhoto: () => void;
   onDeletePhoto: (photoId: string) => void;
@@ -25,6 +26,7 @@ export function PhotoCategoryCard({
   photos,
   disabled,
   isUploading,
+  isNextGuided,
   onFileSelect,
   onDemoPhoto,
   onDeletePhoto,
@@ -34,10 +36,12 @@ export function PhotoCategoryCard({
 
   return (
     <div
-      className={`border rounded-xl p-3 flex flex-col justify-between ${
+      className={`border rounded-xl p-3 flex flex-col justify-between transition ${
         isDone
           ? "border-emerald-300 bg-emerald-50/20"
-          : "border-slate-200 bg-slate-50"
+          : isNextGuided
+            ? "border-amber-400 ring-2 ring-amber-400/30 bg-amber-50/30"
+            : "border-slate-200 bg-slate-50"
       }`}
     >
       <div>
@@ -46,9 +50,13 @@ export function PhotoCategoryCard({
             {PHOTO_CATEGORY_LABELS[category]}
             {isRequired && <span className="text-red-600 ml-1">*</span>}
           </span>
-          {isDone && (
+          {isDone ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          )}
+          ) : isNextGuided ? (
+            <span className="text-[10px] font-extrabold bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full">
+              มุมถัดไป
+            </span>
+          ) : null}
         </div>
 
         {photos.length > 0 ? (
@@ -71,7 +79,7 @@ export function PhotoCategoryCard({
                     <button
                       type="button"
                       onClick={() => onDeletePhoto(p.id)}
-                      className="text-red-300 hover:text-red-100 inline-flex items-center gap-0.5"
+                      className="text-red-300 hover:text-red-100 inline-flex items-center gap-0.5 font-bold"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> ลบ
                     </button>
@@ -81,17 +89,18 @@ export function PhotoCategoryCard({
             ))}
           </div>
         ) : (
-          <div className="h-32 rounded-lg border border-dashed border-slate-300 flex items-center justify-center text-xs text-slate-400 mb-3 bg-white">
+          <div className="h-28 rounded-lg border border-dashed border-slate-300 flex items-center justify-center text-xs text-slate-400 mb-3 bg-white">
             ยังไม่มีรูปถ่ายมุมนี้
           </div>
         )}
       </div>
 
       {!disabled && (
-        <div className="flex items-center gap-2">
-          <label className="flex-1 cursor-pointer bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-3 rounded-lg inline-flex items-center justify-center gap-1.5 transition">
-            <Camera className="w-3.5 h-3.5" />
-            <span>{isUploading ? "กำลังประมวลผล..." : "ถ่ายรูป / เลือกรูป"}</span>
+        <div className="grid grid-cols-5 gap-1.5">
+          {/* Direct Rear Camera Button for Mobile Field Use */}
+          <label className="col-span-2 cursor-pointer bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-2 rounded-lg inline-flex items-center justify-center gap-1 transition">
+            <Camera className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="truncate">{isUploading ? "รอ..." : "กล้องสด"}</span>
             <input
               type="file"
               accept="image/*"
@@ -101,15 +110,28 @@ export function PhotoCategoryCard({
               className="hidden"
             />
           </label>
+
+          {/* Gallery / File Picker Button (For Branch or Saved Photos) */}
+          <label className="col-span-2 cursor-pointer bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold py-2.5 px-2 rounded-lg inline-flex items-center justify-center gap-1 transition">
+            <ImageIcon className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">คลังภาพ</span>
+            <input
+              type="file"
+              accept="image/*"
+              disabled={isUploading}
+              onChange={(e) => onFileSelect(e.target.files?.[0])}
+              className="hidden"
+            />
+          </label>
+
           <button
             type="button"
             disabled={isUploading}
             onClick={onDemoPhoto}
-            title="สร้างรูปจำลองสำหรับทดสอบบนคอมพิวเตอร์"
-            className="bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold py-2 px-2.5 rounded-lg inline-flex items-center gap-1"
+            title="จำลองรูปถ่าย"
+            className="col-span-1 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold py-2.5 rounded-lg inline-flex items-center justify-center"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            จำลอง
           </button>
         </div>
       )}

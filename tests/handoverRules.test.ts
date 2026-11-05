@@ -5,6 +5,8 @@ import {
   getMissingRequiredPhotoCategories,
   verifyCustomerPhoneLast4,
   computeNextOrderStatusAfterSign,
+  buildGoogleMapsSearchUrl,
+  formatTelHref,
 } from "../src/lib/domain/handoverRules";
 import { formatDocumentNumber } from "../src/lib/domain/docNumber";
 
@@ -60,7 +62,6 @@ export function runHandoverDomainTests(): void {
     "DRAFT_PICKUP"
   );
 
-  // Once customer signs pickup, it locks pickup immediately
   assert.equal(
     computeNextOrderStatusAfterSign({
       currentStatus: "DRAFT_PICKUP",
@@ -72,7 +73,6 @@ export function runHandoverDomainTests(): void {
     "PICKED_UP_LOCKED"
   );
 
-  // Once customer signs delivery, it locks entire document as COMPLETED
   assert.equal(
     computeNextOrderStatusAfterSign({
       currentStatus: "PICKED_UP_LOCKED",
@@ -83,6 +83,17 @@ export function runHandoverDomainTests(): void {
     }),
     "COMPLETED"
   );
+
+  // 6. On-Site Mobile Helpers (Google Maps URL & Tel Link)
+  assert.equal(
+    buildGoogleMapsSearchUrl("หมู่บ้านลัดดารมย์ พระราม 3", "https://maps.app.goo.gl/abc"),
+    "https://maps.app.goo.gl/abc"
+  );
+  assert.equal(
+    buildGoogleMapsSearchUrl("คอนโดศุภาลัย พระราม 3", ""),
+    "https://www.google.com/maps/search/?api=1&query=%E0%B8%84%E0%B8%AD%E0%B8%99%E0%B9%82%E0%B8%94%E0%B8%A8%E0%B8%B8%E0%B8%A0%E0%B8%B2%E0%B8%A5%E0%B8%B1%E0%B8%A2%20%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A3%E0%B8%B2%E0%B8%A1%203"
+  );
+  assert.equal(formatTelHref("081-234-5678"), "tel:0812345678");
 
   console.log("✅ All Handover Domain & State Machine Tests Passed!");
 }

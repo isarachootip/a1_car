@@ -54,3 +54,24 @@ export function computeNextOrderStatusAfterSign(
   }
   return input.currentStatus;
 }
+
+export function buildGoogleMapsSearchUrl(
+  pickupLocation: string,
+  explicitMapUrl: string
+): string {
+  const trimmedUrl = explicitMapUrl.trim();
+  if (
+    trimmedUrl.startsWith("http://") ||
+    trimmedUrl.startsWith("https://")
+  ) {
+    return trimmedUrl;
+  }
+  const query = pickupLocation.trim();
+  if (!query) return "";
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+export function formatTelHref(phone: string): string {
+  const clean = phone.replace(/[^\d+]/g, "");
+  return clean ? `tel:${clean}` : "#";
+}

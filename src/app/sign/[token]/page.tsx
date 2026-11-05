@@ -9,6 +9,7 @@ import {
 import { SignaturePadModal } from "@/components/handover/SignaturePadModal";
 import { Auto1PdfDocument } from "@/components/pdf/Auto1PdfDocument";
 import { Auto1PdfPhotoPage } from "@/components/pdf/Auto1PdfPhotoPage";
+import { ResponsivePdfWrapper } from "@/components/pdf/ResponsivePdfWrapper";
 import { HandoverOrderDTO } from "@/lib/types/handover";
 
 export default function CustomerRemoteSignPage({
@@ -103,13 +104,13 @@ export default function CustomerRemoteSignPage({
   const targetPhase = canCustomerSignPickup ? "PICKUP" : "DELIVERY";
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-5">
-      <div className="no-print bg-slate-900 text-white rounded-2xl p-4 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow">
+    <main className="max-w-5xl mx-auto px-3 sm:px-4 py-4 pb-16">
+      <div className="no-print bg-slate-900 text-white rounded-2xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow">
         <div>
           <p className="text-xs text-amber-300 font-bold">
             เอกสารเลขที่ {order.docNumber} — ยืนยันตัวตนสำเร็จ
           </p>
-          <h1 className="text-base font-extrabold">
+          <h1 className="text-sm sm:text-base font-extrabold">
             กรุณาตรวจสอบข้อมูล สภาพตัวถัง และรูปถ่ายรถยนต์ด้านล่าง
           </h1>
         </div>
@@ -119,12 +120,12 @@ export default function CustomerRemoteSignPage({
             <button
               type="button"
               onClick={() => setSignModalOpen(true)}
-              className="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold px-4 py-2.5 rounded-xl inline-flex items-center gap-1.5 shadow"
+              className="flex-1 sm:flex-none justify-center bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold px-4 py-2.5 rounded-xl inline-flex items-center gap-1.5 shadow"
             >
               <PenTool className="w-4 h-4" />
               {canCustomerSignPickup
-                ? "กดเพื่อเซ็นชื่อส่งมอบรถ (ขั้นตอนที่ 1: Pick-up)"
-                : "กดเพื่อเซ็นชื่อรับมอบรถคืน (ขั้นตอนที่ 2: Delivery)"}
+                ? "กดเซ็นชื่อส่งมอบรถ (Pick-up)"
+                : "กดเซ็นชื่อรับรถคืน (Delivery)"}
             </button>
           ) : (
             <span className="bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl inline-flex items-center gap-1.5">
@@ -148,8 +149,10 @@ export default function CustomerRemoteSignPage({
         </div>
       )}
 
-      <Auto1PdfDocument order={order} />
-      <Auto1PdfPhotoPage order={order} />
+      <ResponsivePdfWrapper>
+        <Auto1PdfDocument order={order} />
+        <Auto1PdfPhotoPage order={order} />
+      </ResponsivePdfWrapper>
 
       <SignaturePadModal
         open={signModalOpen}

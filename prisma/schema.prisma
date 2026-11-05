@@ -32,6 +32,10 @@ model HandoverOrder {
   docNumber                String         @unique
   publicToken              String         @unique @default(uuid())
   status                   String         @default("DRAFT_PICKUP")
+  serviceLocationType      String         @default("ON_SITE")
+  pickupLocation           String         @default("")
+  pickupMapUrl             String         @default("")
+  scheduledAt              String         @default("")
   branchId                 String
   branch                   Branch         @relation(fields: [branchId], references: [id])
   staffId                  String
@@ -41,8 +45,8 @@ model HandoverOrder {
   vehicleBrandModel        String
   licensePlate             String
   vehicleColor             String
-  pickupMileage            Int
-  pickupFuelLevel          String
+  pickupMileage            Int            @default(0)
+  pickupFuelLevel          String         @default("1/2")
   serviceStandard          Boolean        @default(false)
   serviceOilFluid          Boolean        @default(false)
   serviceTireAlignment     Boolean        @default(false)

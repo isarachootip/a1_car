@@ -3,6 +3,8 @@ export type OrderStatus =
   | "PICKED_UP_LOCKED"
   | "COMPLETED";
 
+export type ServiceLocationType = "ON_SITE" | "AT_BRANCH";
+
 export type HandoverPhase = "PICKUP" | "DELIVERY";
 
 export type FuelLevel = "1/4" | "1/2" | "3/4" | "FULL";
@@ -77,6 +79,10 @@ export interface HandoverOrderDTO {
   docNumber: string;
   publicToken: string;
   status: OrderStatus;
+  serviceLocationType: ServiceLocationType;
+  pickupLocation: string;
+  pickupMapUrl: string;
+  scheduledAt: string;
   branchId: string;
   branch: { id: string; code: string; name: string; phone: string };
   staffId: string;

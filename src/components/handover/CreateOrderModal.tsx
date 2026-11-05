@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, PlusCircle } from "lucide-react";
+import { X, PlusCircle, MapPin, Building2 } from "lucide-react";
 import { BranchWithStaffDTO } from "@/lib/repositories/branchRepository";
-import { FUEL_LEVEL_LABELS, FuelLevel } from "@/lib/types/handover";
+import { FUEL_LEVEL_LABELS, FuelLevel, ServiceLocationType } from "@/lib/types/handover";
 
 interface CreateOrderModalProps {
   open: boolean;
@@ -14,21 +14,20 @@ interface CreateOrderModalProps {
 
 const FUEL_OPTIONS: FuelLevel[] = ["1/4", "1/2", "3/4", "FULL"];
 
-export function CreateOrderModal({
-  open,
-  branches,
-  onClose,
-  onCreated,
-}: CreateOrderModalProps) {
+export function CreateOrderModal({ open, branches, onClose, onCreated }: CreateOrderModalProps) {
   const defaultBranch = branches[0];
+  const [serviceLocationType, setServiceLocationType] = useState<ServiceLocationType>("ON_SITE");
   const [branchId, setBranchId] = useState(defaultBranch?.id ?? "");
   const [staffId, setStaffId] = useState(defaultBranch?.staff[0]?.id ?? "");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [pickupMapUrl, setPickupMapUrl] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [vehicleBrandModel, setVehicleBrandModel] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
-  const [pickupMileage, setPickupMileage] = useState(15000);
+  const [pickupMileage, setPickupMileage] = useState(0);
   const [pickupFuelLevel, setPickupFuelLevel] = useState<FuelLevel>("1/2");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -49,13 +48,9 @@ export function CreateOrderModal({
         body: JSON.stringify({
           branchId: activeBranch?.id ?? branchId,
           staffId: staffId || staffOptions[0]?.id || "",
-          customerName,
-          customerPhone,
-          vehicleBrandModel,
-          licensePlate,
-          vehicleColor,
-          pickupMileage: Number(pickupMileage) || 0,
-          pickupFuelLevel,
+          serviceLocationType, pickupLocation, pickupMapUrl, scheduledAt,
+          customerName, customerPhone, vehicleBrandModel, licensePlate, vehicleColor,
+          pickupMileage: Number(pickupMileage) || 0, pickupFuelLevel,
         }),
       });
       const json = (await res.json()) as { order?: { id: string }; error?: string };
@@ -69,88 +64,97 @@ export function CreateOrderModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl border border-slate-200">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 my-auto">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
-          <h2 className="font-bold text-slate-900 text-lg">
-            เปิดใบรับ-ส่งมอบรถยนต์ใหม่ (Pick-up & Delivery)
+          <h2 className="font-bold text-slate-900 text-base sm:text-lg">
+            เปิดใบรับ-ส่งมอบรถยนต์ใหม่ (สาขา / Site ลูกค้า)
           </h2>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-sm">
+        <form onSubmit={handleSubmit} className="space-y-3 text-sm">
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setServiceLocationType("ON_SITE")} className={`py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${serviceLocationType === "ON_SITE" ? "bg-slate-900 text-amber-400 border-slate-900" : "bg-slate-50 text-slate-700 border-slate-300"}`}>
+              <MapPin className="w-4 h-4" /> ไปรับรถที่ Site ลูกค้า
+            </button>
+            <button type="button" onClick={() => setServiceLocationType("AT_BRANCH")} className={`py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 ${serviceLocationType === "AT_BRANCH" ? "bg-slate-900 text-amber-400 border-slate-900" : "bg-slate-50 text-slate-700 border-slate-300"}`}>
+              <Building2 className="w-4 h-4" /> รับรถที่สาขา
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">ศูนย์บริการสาขา *</label>
-              <select
-                value={activeBranch?.id ?? ""}
-                onChange={(e) => {
-                  const next = branches.find((b) => b.id === e.target.value);
-                  setBranchId(e.target.value);
-                  setStaffId(next?.staff[0]?.id ?? "");
-                }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2"
-              >
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">ศูนย์บริการสาขา *</label>
+              <select value={activeBranch?.id ?? ""} onChange={(e) => { const next = branches.find((b) => b.id === e.target.value); setBranchId(e.target.value); setStaffId(next?.staff[0]?.id ?? ""); }} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm">
                 {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">เจ้าหน้าที่ผู้ติดต่อ *</label>
-              <select
-                value={staffId || staffOptions[0]?.id || ""}
-                onChange={(e) => setStaffId(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2"
-              >
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">เจ้าหน้าที่ผู้รับผิดชอบ *</label>
+              <select value={staffId || staffOptions[0]?.id || ""} onChange={(e) => setStaffId(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm">
                 {staffOptions.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
             </div>
           </div>
 
+          {serviceLocationType === "ON_SITE" && (
+            <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1 text-xs">📍 สถานที่นัดรับรถ (Site ลูกค้า)</label>
+                  <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} placeholder="เช่น หมู่บ้านลัดดารมย์ พระราม 3" className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1 text-xs">⏰ วัน-เวลานัดหมาย</label>
+                  <input type="text" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} placeholder="เช่น วันนี้ 13:30 น." className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
+                </div>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-800 mb-1 text-xs">🗺️ ลิงก์พิกัด Google Maps (ถ้ามี)</label>
+                <input type="url" value={pickupMapUrl} onChange={(e) => setPickupMapUrl(e.target.value)} placeholder="https://maps.app.goo.gl/..." className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล ลูกค้า *</label>
-              <input type="text" required value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="เช่น คุณกิตติศักดิ์ วงศ์สวัสดิ์" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">ชื่อ-นามสกุล ลูกค้า *</label>
+              <input type="text" required value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="เช่น คุณกิตติศักดิ์ วงศ์สวัสดิ์" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์ลูกค้า *</label>
-              <input type="tel" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="เช่น 081-234-5678" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">เบอร์โทรศัพท์ลูกค้า *</label>
+              <input type="tel" required value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="เช่น 081-234-5678" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">ยี่ห้อ / รุ่นรถยนต์ *</label>
-              <input type="text" required value={vehicleBrandModel} onChange={(e) => setVehicleBrandModel(e.target.value)} placeholder="เช่น Toyota Cross" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">ยี่ห้อ / รุ่นรถยนต์ *</label>
+              <input type="text" required value={vehicleBrandModel} onChange={(e) => setVehicleBrandModel(e.target.value)} placeholder="เช่น Toyota Cross" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">ทะเบียนรถ / จังหวัด *</label>
-              <input type="text" required value={licensePlate} onChange={(e) => setLicensePlate(e.target.value)} placeholder="เช่น 2ขค 8899 กทม." className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">ทะเบียนรถ / จังหวัด *</label>
+              <input type="text" required value={licensePlate} onChange={(e) => setLicensePlate(e.target.value)} placeholder="เช่น 2ขค 8899 กทม." className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">สีรถ *</label>
-              <input type="text" required value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} placeholder="เช่น ขาวมุก" className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">สีรถ *</label>
+              <input type="text" required value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} placeholder="เช่น ขาวมุก" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">เลขไมล์ก่อนรับรถ (กม.) *</label>
-              <input type="number" min={0} required value={pickupMileage} onChange={(e) => setPickupMileage(Number(e.target.value) || 0)} className="w-full rounded-lg border border-slate-300 px-3 py-2" />
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">เลขไมล์ก่อนรับรถ (ใส่ 0 ได้ถ้ารับแจ้งล่วงหน้า)</label>
+              <input type="number" min={0} value={pickupMileage} onChange={(e) => setPickupMileage(Number(e.target.value) || 0)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm" />
             </div>
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">ระดับน้ำมัน/แบตเตอรี่ *</label>
+              <label className="block font-semibold text-slate-700 mb-1 text-xs">ระดับน้ำมันเบื้องต้น</label>
               <div className="grid grid-cols-4 gap-1.5">
                 {FUEL_OPTIONS.map((lvl) => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    onClick={() => setPickupFuelLevel(lvl)}
-                    className={`py-2 rounded-lg border text-xs font-bold ${
-                      pickupFuelLevel === lvl ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"
-                    }`}
-                  >
+                  <button key={lvl} type="button" onClick={() => setPickupFuelLevel(lvl)} className={`py-2 rounded-lg border text-xs font-bold ${pickupFuelLevel === lvl ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300"}`}>
                     {FUEL_LEVEL_LABELS[lvl]}
                   </button>
                 ))}
@@ -161,12 +165,10 @@ export function CreateOrderModal({
           {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700">
-              ยกเลิก
-            </button>
-            <button type="submit" disabled={submitting} className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold inline-flex items-center gap-1.5">
+            <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700">ยกเลิก</button>
+            <button type="submit" disabled={submitting} className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold inline-flex items-center gap-1.5">
               <PlusCircle className="w-4 h-4" />
-              {submitting ? "กำลังสร้าง..." : "สร้างใบงานและไปหน้าตรวจสภาพรถ"}
+              {submitting ? "กำลังสร้าง..." : "บันทึกและเปิดใบงาน"}
             </button>
           </div>
         </form>

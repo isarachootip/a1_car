@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const fuelLevelSchema = z.enum(["1/4", "1/2", "3/4", "FULL"]);
+export const serviceLocationTypeSchema = z.enum(["ON_SITE", "AT_BRANCH"]);
 export const phaseSchema = z.enum(["PICKUP", "DELIVERY"]);
 export const damageZoneSchema = z.enum([
   "FRONT",
@@ -31,6 +32,10 @@ export const damageMarkInputSchema = z.object({
 export const createOrderSchema = z.object({
   branchId: z.string().min(1, "กรุณาเลือกสาขา"),
   staffId: z.string().min(1, "กรุณาเลือกเจ้าหน้าที่ผู้ติดต่อ"),
+  serviceLocationType: serviceLocationTypeSchema.optional().default("ON_SITE"),
+  pickupLocation: z.string().max(400).optional().default(""),
+  pickupMapUrl: z.string().max(500).optional().default(""),
+  scheduledAt: z.string().max(100).optional().default(""),
   customerName: z.string().min(2, "กรุณาระบุชื่อ-นามสกุลลูกค้า"),
   customerPhone: z
     .string()
@@ -38,13 +43,22 @@ export const createOrderSchema = z.object({
   vehicleBrandModel: z.string().min(2, "กรุณาระบุยี่ห้อ / รุ่นรถยนต์"),
   licensePlate: z.string().min(2, "กรุณาระบุทะเบียนรถ / จังหวัด"),
   vehicleColor: z.string().min(1, "กรุณาระบุสีรถ"),
-  pickupMileage: z.number().int().min(0, "เลขไมล์ต้องไม่ติดลบ"),
-  pickupFuelLevel: fuelLevelSchema,
+  pickupMileage: z.number().int().min(0, "เลขไมล์ต้องไม่ติดลบ").optional().default(0),
+  pickupFuelLevel: fuelLevelSchema.optional().default("1/2"),
+  serviceStandard: z.boolean().optional().default(false),
+  serviceOilFluid: z.boolean().optional().default(false),
+  serviceTireAlignment: z.boolean().optional().default(false),
+  serviceBrakeSuspension: z.boolean().optional().default(false),
+  serviceAdditionalNote: z.string().max(500).optional().default(""),
 });
 
 export const updatePickupOrderSchema = z.object({
   branchId: z.string().min(1).optional(),
   staffId: z.string().min(1).optional(),
+  serviceLocationType: serviceLocationTypeSchema.optional(),
+  pickupLocation: z.string().max(400).optional(),
+  pickupMapUrl: z.string().max(500).optional(),
+  scheduledAt: z.string().max(100).optional(),
   customerName: z.string().min(2).optional(),
   customerPhone: z.string().min(9).optional(),
   vehicleBrandModel: z.string().min(2).optional(),

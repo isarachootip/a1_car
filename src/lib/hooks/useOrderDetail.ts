@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CustomerVehicleFields } from "@/components/handover/CustomerVehicleSection";
+import { FieldLocationValues } from "@/components/handover/FieldLocationBanner";
 import { InventoryFields } from "@/components/handover/InventoryChecklist";
 import { BranchWithStaffDTO } from "@/lib/repositories/branchRepository";
 import {
@@ -12,27 +13,18 @@ import {
   PhotoCategory,
 } from "@/lib/types/handover";
 
+const INITIAL_LOC_FIELDS: FieldLocationValues = {
+  serviceLocationType: "ON_SITE", pickupLocation: "", pickupMapUrl: "", scheduledAt: "",
+};
+
 const INITIAL_CV_FIELDS: CustomerVehicleFields = {
-  customerName: "",
-  customerPhone: "",
-  vehicleBrandModel: "",
-  licensePlate: "",
-  vehicleColor: "",
-  pickupMileage: 0,
-  pickupFuelLevel: "1/2",
-  serviceStandard: false,
-  serviceOilFluid: false,
-  serviceTireAlignment: false,
-  serviceBrakeSuspension: false,
-  serviceAdditionalNote: "",
+  customerName: "", customerPhone: "", vehicleBrandModel: "", licensePlate: "",
+  vehicleColor: "", pickupMileage: 0, pickupFuelLevel: "1/2", serviceStandard: false,
+  serviceOilFluid: false, serviceTireAlignment: false, serviceBrakeSuspension: false, serviceAdditionalNote: "",
 };
 
 const INITIAL_INV_FIELDS: InventoryFields = {
-  invRegistrationBook: true,
-  invSpareKeyRemote: false,
-  invSpareTireJack: true,
-  invDashcamTollCard: true,
-  invOtherValuables: "",
+  invRegistrationBook: true, invSpareKeyRemote: false, invSpareTireJack: true, invDashcamTollCard: true, invOtherValuables: "",
 };
 
 export function useOrderDetail(id: string) {
@@ -42,6 +34,7 @@ export function useOrderDetail(id: string) {
   const [toast, setToast] = useState<string>("");
   const [branchId, setBranchId] = useState("");
   const [staffId, setStaffId] = useState("");
+  const [locFields, setLocFields] = useState<FieldLocationValues>(INITIAL_LOC_FIELDS);
   const [cvFields, setCvFields] = useState<CustomerVehicleFields>(INITIAL_CV_FIELDS);
   const [invFields, setInvFields] = useState<InventoryFields>(INITIAL_INV_FIELDS);
   const [damageMarks, setDamageMarks] = useState<DamageMarkRecord[]>([]);
@@ -52,25 +45,21 @@ export function useOrderDetail(id: string) {
     setOrder(o);
     setBranchId(o.branchId);
     setStaffId(o.staffId);
+    setLocFields({
+      serviceLocationType: o.serviceLocationType, pickupLocation: o.pickupLocation,
+      pickupMapUrl: o.pickupMapUrl, scheduledAt: o.scheduledAt,
+    });
     setCvFields({
-      customerName: o.customerName,
-      customerPhone: o.customerPhone,
-      vehicleBrandModel: o.vehicleBrandModel,
-      licensePlate: o.licensePlate,
-      vehicleColor: o.vehicleColor,
-      pickupMileage: o.pickupMileage,
-      pickupFuelLevel: o.pickupFuelLevel,
-      serviceStandard: o.serviceStandard,
-      serviceOilFluid: o.serviceOilFluid,
-      serviceTireAlignment: o.serviceTireAlignment,
-      serviceBrakeSuspension: o.serviceBrakeSuspension,
-      serviceAdditionalNote: o.serviceAdditionalNote,
+      customerName: o.customerName, customerPhone: o.customerPhone,
+      vehicleBrandModel: o.vehicleBrandModel, licensePlate: o.licensePlate,
+      vehicleColor: o.vehicleColor, pickupMileage: o.pickupMileage,
+      pickupFuelLevel: o.pickupFuelLevel, serviceStandard: o.serviceStandard,
+      serviceOilFluid: o.serviceOilFluid, serviceTireAlignment: o.serviceTireAlignment,
+      serviceBrakeSuspension: o.serviceBrakeSuspension, serviceAdditionalNote: o.serviceAdditionalNote,
     });
     setInvFields({
-      invRegistrationBook: o.invRegistrationBook,
-      invSpareKeyRemote: o.invSpareKeyRemote,
-      invSpareTireJack: o.invSpareTireJack,
-      invDashcamTollCard: o.invDashcamTollCard,
+      invRegistrationBook: o.invRegistrationBook, invSpareKeyRemote: o.invSpareKeyRemote,
+      invSpareTireJack: o.invSpareTireJack, invDashcamTollCard: o.invDashcamTollCard,
       invOtherValuables: o.invOtherValuables,
     });
     setDamageMarks(o.damageMarks);
@@ -103,19 +92,13 @@ export function useOrderDetail(id: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "PICKUP",
-          data: {
-            branchId,
-            staffId,
-            ...cvFields,
-            ...invFields,
-            damageMarks: damageMarks.filter((m) => m.phase === "PICKUP"),
-          },
+          data: { branchId, staffId, ...locFields, ...cvFields, ...invFields, damageMarks: damageMarks.filter((m) => m.phase === "PICKUP") },
         }),
       });
       const json = (await res.json()) as { order?: HandoverOrderDTO; error?: string };
       if (!res.ok || !json.order) throw new Error(json.error ?? "บันทึกไม่สำเร็จ");
       syncStateFromOrder(json.order);
-      showNotice("✅ บันทึกข้อมูลขารับรถและจุดรอยตัวถังเรียบร้อยแล้ว");
+      showNotice("✅ บันทึกข้อมูลเรียบร้อยแล้ว");
     } catch (e) {
       showNotice(`❌ ${e instanceof Error ? e.message : "เกิดข้อผิดพลาด"}`);
     } finally {
@@ -130,11 +113,7 @@ export function useOrderDetail(id: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         mode: "DELIVERY",
-        data: {
-          deliveryMileage,
-          deliveryFuelLevel: deliveryFuel,
-          damageMarks: damageMarks.filter((m) => m.phase === "DELIVERY"),
-        },
+        data: { deliveryMileage, deliveryFuelLevel: deliveryFuel, damageMarks: damageMarks.filter((m) => m.phase === "DELIVERY") },
       }),
     });
     const json = (await res.json()) as { order?: HandoverOrderDTO; error?: string };
@@ -143,18 +122,9 @@ export function useOrderDetail(id: string) {
     showNotice("✅ บันทึกเลขไมล์และน้ำมันขาส่งคืนเรียบร้อยแล้ว");
   };
 
-  const handleUploadPhoto = async (payload: {
-    phase: HandoverPhase;
-    category: PhotoCategory;
-    dataUrl: string;
-    caption: string;
-  }) => {
+  const handleUploadPhoto = async (payload: { phase: HandoverPhase; category: PhotoCategory; dataUrl: string; caption: string }) => {
     if (!order) return;
-    const res = await fetch(`/api/orders/${order.id}/photos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(`/api/orders/${order.id}/photos`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const json = (await res.json()) as { order?: HandoverOrderDTO; error?: string };
     if (!res.ok || !json.order) throw new Error(json.error ?? "อัปโหลดรูปไม่สำเร็จ");
     syncStateFromOrder(json.order);
@@ -168,17 +138,10 @@ export function useOrderDetail(id: string) {
     if (json.order) syncStateFromOrder(json.order);
   };
 
-  const handleSign = async (
-    pickupEditable: boolean,
-    payload: { phase: HandoverPhase; role: "CUSTOMER" | "STAFF"; signerName: string; signatureDataUrl: string }
-  ) => {
+  const handleSign = async (pickupEditable: boolean, payload: { phase: HandoverPhase; role: "CUSTOMER" | "STAFF"; signerName: string; signatureDataUrl: string }) => {
     if (!order) return;
     if (pickupEditable) await handleSavePickup();
-    const res = await fetch(`/api/orders/${order.id}/sign`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(`/api/orders/${order.id}/sign`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     const json = (await res.json()) as { order?: HandoverOrderDTO; error?: string };
     if (!res.ok || !json.order) throw new Error(json.error ?? "ลงนามไม่สำเร็จ");
     syncStateFromOrder(json.order);
@@ -187,8 +150,8 @@ export function useOrderDetail(id: string) {
 
   return {
     order, branches, saving, toast, branchId, setBranchId, staffId, setStaffId,
-    cvFields, setCvFields, invFields, setInvFields, damageMarks, setDamageMarks,
-    deliveryMileage, setDeliveryMileage, deliveryFuel, setDeliveryFuel,
+    locFields, setLocFields, cvFields, setCvFields, invFields, setInvFields,
+    damageMarks, setDamageMarks, deliveryMileage, setDeliveryMileage, deliveryFuel, setDeliveryFuel,
     handleSavePickup, handleSaveDelivery, handleUploadPhoto, handleDeletePhoto, handleSign,
   };
 }

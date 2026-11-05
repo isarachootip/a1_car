@@ -1,10 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AUTO1 — ระบบใบรับ-ส่งมอบรถยนต์นอกสถานที่ (Pick-up & Delivery)",
+  title: "AUTO1 — ระบบใบรับ-ส่งมอบรถยนต์ (สาขา & นอกสถานที่)",
   description:
-    "ระบบบันทึกข้อมูล ตรวจสอบสภาพตัวถัง ถ่ายรูปรถยนต์ และลงนามออนไลน์สำหรับบริการรับ-ส่งมอบรถยนต์นอกสถานที่ AUTO1",
+    "ระบบบันทึกข้อมูล ตรวจสอบสภาพตัวถัง ถ่ายรูปรถยนต์ และลงนามออนไลน์สำหรับบริการรับ-ส่งมอบรถยนต์ AUTO1",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AUTO1 รับ-ส่งรถ",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
@@ -15,10 +28,7 @@ export default function RootLayout({
   return (
     <html lang="th">
       <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
           href="https://fonts.gstatic.com"

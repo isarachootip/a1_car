@@ -49,8 +49,9 @@ export async function getHandoverOrderByToken(
 }
 
 export async function createHandoverOrder(
-  input: z.infer<typeof createOrderSchema>
+  rawInput: z.input<typeof createOrderSchema>
 ): Promise<HandoverOrderDTO> {
+  const input = createOrderSchema.parse(rawInput);
   const year = new Date().getFullYear();
   const count = await prisma.handoverOrder.count();
   let seq = count + 1;

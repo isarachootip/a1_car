@@ -1,0 +1,10 @@
+{
+  "name": "AUTO1 Pick-up & Delivery",
+  "short_name": "AUTO1 รับ-ส่งรถ",
+  "description": "ระบบบันทึกข้อมูลใบรับ-ส่งมอบรถยนต์นอกสถานที่และที่สาขา AUTO1",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary"
+}
