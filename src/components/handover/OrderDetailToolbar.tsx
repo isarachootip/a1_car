@@ -9,6 +9,7 @@ import {
   QrCode,
   Smartphone,
   Monitor,
+  BookOpen,
 } from "lucide-react";
 
 export type LayoutMode = "WIZARD" | "FULL" | "PDF";
@@ -94,6 +95,13 @@ export function OrderDetailToolbar({
         >
           <Printer className="w-3.5 h-3.5" /> พิมพ์ PDF
         </button>
+
+        <Link
+          href="/guide"
+          className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-bold inline-flex items-center gap-1"
+        >
+          <BookOpen className="w-3.5 h-3.5" /> คู่มือ
+        </Link>
       </div>
     </div>
   );

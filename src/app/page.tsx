@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Car, Plus, Search, CheckCircle2, Clock } from "lucide-react";
+import { Car, Plus, Search, CheckCircle2, Clock, BookOpen } from "lucide-react";
 import { CreateOrderModal } from "@/components/handover/CreateOrderModal";
 import { OrderListGrid } from "@/components/handover/OrderListGrid";
 import { BranchWithStaffDTO } from "@/lib/repositories/branchRepository";
@@ -62,14 +63,23 @@ export default function HomeDashboardPage() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setCreateOpen(true)}
-          className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold px-5 py-3 rounded-xl inline-flex items-center justify-center gap-2 text-sm shadow transition"
-        >
-          <Plus className="w-5 h-5" />
-          สร้างใบรับ-ส่งมอบรถใหม่
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/guide"
+            className="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-bold px-4 py-3 rounded-xl inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm transition"
+          >
+            <BookOpen className="w-4 h-4" />
+            คู่มือการใช้งาน
+          </Link>
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold px-5 py-3 rounded-xl inline-flex items-center justify-center gap-2 text-xs sm:text-sm shadow transition"
+          >
+            <Plus className="w-5 h-5" />
+            สร้างใบรับ-ส่งมอบรถใหม่
+          </button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
