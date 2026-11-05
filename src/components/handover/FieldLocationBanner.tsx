@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import { MapPin, PhoneCall, Navigation, CalendarClock, Building2 } from "lucide-react";
+import { MapPin, PhoneCall, Navigation, Building2 } from "lucide-react";
 import {
   buildGoogleMapsSearchUrl,
   formatTelHref,
 } from "@/lib/domain/handoverRules";
 import { ServiceLocationType } from "@/lib/types/handover";
+import { LocationMapPicker } from "./LocationMapPicker";
 
 export interface FieldLocationValues {
   serviceLocationType: ServiceLocationType;
@@ -16,6 +17,7 @@ export interface FieldLocationValues {
 }
 
 interface FieldLocationBannerProps {
+  branchCode?: string;
   customerName: string;
   customerPhone: string;
   values: FieldLocationValues;
@@ -27,7 +29,7 @@ interface FieldLocationBannerProps {
 }
 
 export function FieldLocationBanner({
-  customerName,
+  branchCode,
   customerPhone,
   values,
   disabled,
@@ -41,7 +43,7 @@ export function FieldLocationBanner({
 
   return (
     <section className="bg-white border border-slate-300 rounded-xl p-4 sm:p-5 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 mb-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -71,7 +73,6 @@ export function FieldLocationBanner({
           </button>
         </div>
 
-        {/* Quick Mobile Action Buttons for On-Site Staff */}
         <div className="grid grid-cols-2 sm:flex items-center gap-2">
           <a
             href={telHref}
@@ -95,52 +96,18 @@ export function FieldLocationBanner({
       </div>
 
       {values.serviceLocationType === "ON_SITE" ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 text-sm">
-          <div className="md:col-span-1">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              📍 สถานที่นัดรับ-ส่งรถ (ชื่อหมู่บ้าน/อาคาร/ซอย)
-            </label>
-            <input
-              type="text"
-              disabled={disabled}
-              value={values.pickupLocation}
-              onChange={(e) => onChange("pickupLocation", e.target.value)}
-              placeholder={`สถานที่รับรถของ ${customerName || "ลูกค้า"}`}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm disabled:bg-slate-100"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              🗺️ ลิงก์พิกัด Google Maps (ถ้ามี)
-            </label>
-            <input
-              type="url"
-              disabled={disabled}
-              value={values.pickupMapUrl}
-              onChange={(e) => onChange("pickupMapUrl", e.target.value)}
-              placeholder="วางลิงก์ https://maps.app.goo.gl/..."
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs sm:text-sm disabled:bg-slate-100"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              ⏰ วัน-เวลานัดหมายรับรถ
-            </label>
-            <div className="relative">
-              <CalendarClock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                disabled={disabled}
-                value={values.scheduledAt}
-                onChange={(e) => onChange("scheduledAt", e.target.value)}
-                placeholder="เช่น วันนี้ 10:30 น."
-                className="w-full rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-xs sm:text-sm disabled:bg-slate-100"
-              />
-            </div>
-          </div>
-        </div>
+        <LocationMapPicker
+          branchCode={branchCode}
+          pickupLocation={values.pickupLocation}
+          pickupMapUrl={values.pickupMapUrl}
+          scheduledAt={values.scheduledAt}
+          disabled={disabled}
+          onChangeLocation={(loc) => onChange("pickupLocation", loc)}
+          onChangeMapUrl={(url) => onChange("pickupMapUrl", url)}
+          onChangeScheduledAt={(time) => onChange("scheduledAt", time)}
+        />
       ) : (
-        <p className="text-xs text-slate-500 pt-3">
+        <p className="text-xs text-slate-500">
           🏢 โหมดรับรถที่สาขา: ลูกค้านำรถเข้ามาส่งมอบหรือรับบริการที่ศูนย์บริการสาขาโดยตรง
         </p>
       )}

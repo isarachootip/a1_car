@@ -94,6 +94,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 onStaffChange={setStaffId}
               />
               <FieldLocationBanner
+                branchCode={branches.find((b) => b.id === branchId)?.code ?? order.branch.code}
                 customerName={cvFields.customerName}
                 customerPhone={cvFields.customerPhone}
                 values={locFields}

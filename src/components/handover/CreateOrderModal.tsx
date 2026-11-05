@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, PlusCircle, MapPin, Building2 } from "lucide-react";
 import { BranchWithStaffDTO } from "@/lib/repositories/branchRepository";
 import { FUEL_LEVEL_LABELS, FuelLevel, ServiceLocationType } from "@/lib/types/handover";
+import { LocationMapPicker } from "./LocationMapPicker";
 
 interface CreateOrderModalProps {
   open: boolean;
@@ -65,7 +66,7 @@ export function CreateOrderModal({ open, branches, onClose, onCreated }: CreateO
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 my-auto">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 my-auto">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
           <h2 className="font-bold text-slate-900 text-base sm:text-lg">
             เปิดใบรับ-ส่งมอบรถยนต์ใหม่ (สาขา / Site ลูกค้า)
@@ -101,22 +102,15 @@ export function CreateOrderModal({ open, branches, onClose, onCreated }: CreateO
           </div>
 
           {serviceLocationType === "ON_SITE" && (
-            <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1 text-xs">📍 สถานที่นัดรับรถ (Site ลูกค้า)</label>
-                  <input type="text" value={pickupLocation} onChange={(e) => setPickupLocation(e.target.value)} placeholder="เช่น หมู่บ้านลัดดารมย์ พระราม 3" className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1 text-xs">⏰ วัน-เวลานัดหมาย</label>
-                  <input type="text" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} placeholder="เช่น วันนี้ 13:30 น." className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
-                </div>
-              </div>
-              <div>
-                <label className="block font-bold text-slate-800 mb-1 text-xs">🗺️ ลิงก์พิกัด Google Maps (ถ้ามี)</label>
-                <input type="url" value={pickupMapUrl} onChange={(e) => setPickupMapUrl(e.target.value)} placeholder="https://maps.app.goo.gl/..." className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs bg-white" />
-              </div>
-            </div>
+            <LocationMapPicker
+              branchCode={activeBranch?.code}
+              pickupLocation={pickupLocation}
+              pickupMapUrl={pickupMapUrl}
+              scheduledAt={scheduledAt}
+              onChangeLocation={setPickupLocation}
+              onChangeMapUrl={setPickupMapUrl}
+              onChangeScheduledAt={setScheduledAt}
+            />
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
