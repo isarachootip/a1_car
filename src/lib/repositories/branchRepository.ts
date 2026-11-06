@@ -1,5 +1,10 @@
 import { prisma } from "../db";
 import { AUTO1_BRANCH_CATALOG } from "../data/auto1BranchCatalog";
+import {
+  generateStaffUsername,
+  hashPassword,
+  STAFF_DEFAULT_PASSWORD,
+} from "../domain/authPassword";
 
 export interface BranchWithStaffDTO {
   id: string;
@@ -9,6 +14,7 @@ export interface BranchWithStaffDTO {
   region: string;
   staff: Array<{
     id: string;
+    username: string;
     name: string;
     role: string;
     branchId: string;
@@ -26,6 +32,7 @@ export async function syncAuto1BranchesCatalog(): Promise<void> {
     include: { staff: true },
   });
   const existingByCode = new Map(existingBranches.map((b) => [b.code, b]));
+  const defaultStaffHash = hashPassword(STAFF_DEFAULT_PASSWORD, "auto1staff");
 
   for (const item of AUTO1_BRANCH_CATALOG) {
     const found = existingByCode.get(item.code);
@@ -36,7 +43,13 @@ export async function syncAuto1BranchesCatalog(): Promise<void> {
           name: item.name,
           phone: item.phone,
           staff: {
-            create: item.staff,
+            create: item.staff.map((s, idx) => ({
+              username: generateStaffUsername(item.code, idx),
+              name: s.name,
+              role: s.role,
+              passwordHash: defaultStaffHash,
+              isActive: true,
+            })),
           },
         },
       });
@@ -48,12 +61,16 @@ export async function syncAuto1BranchesCatalog(): Promise<void> {
         });
       }
       const existingNames = new Set(found.staff.map((s) => s.name));
-      for (const s of item.staff) {
+      for (let idx = 0; idx < item.staff.length; idx++) {
+        const s = item.staff[idx];
         if (!existingNames.has(s.name)) {
           await prisma.staffUser.create({
             data: {
+              username: generateStaffUsername(item.code, idx),
               name: s.name,
               role: s.role,
+              passwordHash: defaultStaffHash,
+              isActive: true,
               branchId: found.id,
             },
           });
@@ -77,6 +94,7 @@ export async function listBranchesWithStaff(): Promise<BranchWithStaffDTO[]> {
   const rows = await prisma.branch.findMany({
     include: {
       staff: {
+        where: { isActive: true },
         orderBy: { name: "asc" },
       },
     },
@@ -91,6 +109,7 @@ export async function listBranchesWithStaff(): Promise<BranchWithStaffDTO[]> {
     region: REGION_BY_CODE[b.code] ?? "สาขาทั่วไป",
     staff: b.staff.map((s) => ({
       id: s.id,
+      username: s.username,
       name: s.name,
       role: s.role,
       branchId: s.branchId,

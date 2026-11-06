@@ -1,11 +1,11 @@
 import { prisma } from "../src/lib/db";
 import { AUTO1_BRANCH_CATALOG } from "../src/lib/data/auto1BranchCatalog";
-import { syncAuto1BranchesCatalog } from "../src/lib/repositories/branchRepository";
+import { ensureSysAdminAndStaffCredentials } from "../src/lib/repositories/userRepository";
 
 async function main(): Promise<void> {
-  await syncAuto1BranchesCatalog();
+  await ensureSysAdminAndStaffCredentials();
   console.log(
-    `Seeded ${AUTO1_BRANCH_CATALOG.length} AUTO1 branches and demo staff successfully.`
+    `Seeded ${AUTO1_BRANCH_CATALOG.length} AUTO1 branches, sysadmin, and staff credentials successfully.`
   );
 }
 

@@ -1,37 +1,52 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Car, Plus, Search, CheckCircle2, Clock, BookOpen } from "lucide-react";
+import { Car, Search, CheckCircle2, Clock } from "lucide-react";
 import { CreateOrderModal } from "@/components/handover/CreateOrderModal";
 import { OrderListGrid } from "@/components/handover/OrderListGrid";
+import { DashboardTopBar } from "@/components/handover/DashboardTopBar";
 import { BranchWithStaffDTO } from "@/lib/repositories/branchRepository";
 import { HandoverOrderDTO } from "@/lib/types/handover";
+import { SessionUserPayload } from "@/lib/domain/authPassword";
 
 export default function HomeDashboardPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<HandoverOrderDTO[]>([]);
   const [branches, setBranches] = useState<BranchWithStaffDTO[]>([]);
+  const [currentUser, setCurrentUser] = useState<SessionUserPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
-    Promise.all([fetch("/api/orders"), fetch("/api/branches")])
-      .then(async ([ordersRes, branchesRes]) => {
+    Promise.all([
+      fetch("/api/orders"),
+      fetch("/api/branches"),
+      fetch("/api/auth/me"),
+    ])
+      .then(async ([ordersRes, branchesRes, meRes]) => {
         const ordersJson = (await ordersRes.json()) as {
           orders?: HandoverOrderDTO[];
         };
         const branchesJson = (await branchesRes.json()) as {
           branches?: BranchWithStaffDTO[];
         };
+        const meJson = (await meRes.json()) as {
+          user?: SessionUserPayload | null;
+        };
         setOrders(ordersJson.orders ?? []);
         setBranches(branchesJson.branches ?? []);
+        setCurrentUser(meJson.user ?? null);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setCurrentUser(null);
+  };
 
   const filtered = orders.filter((o) => {
     const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
@@ -47,40 +62,11 @@ export default function HomeDashboardPage() {
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-6">
-      <header className="bg-slate-900 text-white rounded-2xl p-6 shadow-md mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-amber-400 text-slate-900 font-black px-4 py-2.5 rounded-xl text-2xl flex items-center gap-1">
-            <span>AUTO</span>
-            <span className="bg-slate-900 text-white px-2 py-0.5 rounded">1</span>
-          </div>
-          <div>
-            <p className="text-xs text-amber-300 font-semibold">
-              ศูนย์บริการรถยนต์ในเครือเซ็นทรัลรีเทล (Pick-up & Delivery Online System)
-            </p>
-            <h1 className="text-xl md:text-2xl font-extrabold">
-              ระบบจัดการใบรับ - ส่งมอบรถยนต์นอกสถานที่
-            </h1>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/guide"
-            className="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-bold px-4 py-3 rounded-xl inline-flex items-center justify-center gap-1.5 text-xs sm:text-sm transition"
-          >
-            <BookOpen className="w-4 h-4" />
-            คู่มือการใช้งาน
-          </Link>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold px-5 py-3 rounded-xl inline-flex items-center justify-center gap-2 text-xs sm:text-sm shadow transition"
-          >
-            <Plus className="w-5 h-5" />
-            สร้างใบรับ-ส่งมอบรถใหม่
-          </button>
-        </div>
-      </header>
+      <DashboardTopBar
+        currentUser={currentUser}
+        onOpenCreate={() => setCreateOpen(true)}
+        onLogout={handleLogout}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">

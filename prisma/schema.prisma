@@ -18,13 +18,16 @@ model Branch {
 }
 
 model StaffUser {
-  id        String          @id @default(cuid())
-  name      String
-  role      String          @default("STAFF")
-  branchId  String
-  branch    Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  orders    HandoverOrder[]
-  createdAt DateTime        @default(now())
+  id           String          @id @default(cuid())
+  username     String          @default("")
+  name         String
+  role         String          @default("STAFF")
+  passwordHash String          @default("")
+  isActive     Boolean         @default(true)
+  branchId     String
+  branch       Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  orders       HandoverOrder[]
+  createdAt    DateTime        @default(now())
 }
 
 model HandoverOrder {
