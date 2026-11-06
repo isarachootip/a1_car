@@ -16,6 +16,7 @@ interface PhotoCategoryCardProps {
   disabled: boolean;
   isUploading: boolean;
   isNextGuided: boolean;
+  onOpenLiveCamera: () => void;
   onFileSelect: (file: File | undefined) => void;
   onDemoPhoto: () => void;
   onDeletePhoto: (photoId: string) => void;
@@ -27,6 +28,7 @@ export function PhotoCategoryCard({
   disabled,
   isUploading,
   isNextGuided,
+  onOpenLiveCamera,
   onFileSelect,
   onDemoPhoto,
   onDeletePhoto,
@@ -97,21 +99,18 @@ export function PhotoCategoryCard({
 
       {!disabled && (
         <div className="grid grid-cols-5 gap-1.5">
-          {/* Direct Rear Camera Button for Mobile Field Use */}
-          <label className="col-span-2 cursor-pointer bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-2 rounded-lg inline-flex items-center justify-center gap-1 transition">
+          {/* Open In-App WebRTC Live Camera Viewfinder Modal */}
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={onOpenLiveCamera}
+            className="col-span-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-2 rounded-lg inline-flex items-center justify-center gap-1 transition"
+          >
             <Camera className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span className="truncate">{isUploading ? "รอ..." : "กล้องสด"}</span>
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              disabled={isUploading}
-              onChange={(e) => onFileSelect(e.target.files?.[0])}
-              className="hidden"
-            />
-          </label>
+          </button>
 
-          {/* Gallery / File Picker Button (For Branch or Saved Photos) */}
+          {/* Gallery / File Picker Button (For Saved Photos) */}
           <label className="col-span-2 cursor-pointer bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold py-2.5 px-2 rounded-lg inline-flex items-center justify-center gap-1 transition">
             <ImageIcon className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">คลังภาพ</span>

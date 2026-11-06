@@ -15,6 +15,7 @@ import {
   generateDemoVehiclePhotoDataUrl,
 } from "@/lib/utils/imageWatermark";
 import { PhotoCategoryCard } from "./PhotoCategoryCard";
+import { LiveCameraModal } from "./LiveCameraModal";
 
 interface PhotoCaptureGridProps {
   docNumber: string;
@@ -44,6 +45,7 @@ export function PhotoCaptureGrid({
   onDeletePhoto,
 }: PhotoCaptureGridProps) {
   const [uploadingCat, setUploadingCat] = useState<PhotoCategory | null>(null);
+  const [liveCameraCat, setLiveCameraCat] = useState<PhotoCategory | null>(null);
   const phasePhotos = photos.filter((p) => p.phase === phase);
   const missingCats = getMissingRequiredPhotoCategories(phasePhotos, phase);
   const nextGuidedCat = missingCats[0] ?? null;
@@ -99,7 +101,7 @@ export function PhotoCaptureGrid({
             📸 บันทึกรูปถ่ายสภาพรถยนต์ ({phase === "PICKUP" ? "ขารับรถ" : "ขาส่งคืนรถ"})
           </h3>
           <p className="text-xs text-slate-500">
-            กด &ldquo;กล้องสด&rdquo; เมื่อเดินถ่ายหน้างาน หรือกด &ldquo;คลังภาพ&rdquo; เพื่อเลือกรูปในเครื่อง
+            กด &ldquo;กล้องสด&rdquo; เพื่อเปิดหน้าจอกล้องถ่ายรูปพร้อมกรอบเล็ง หรือกด &ldquo;คลังภาพ&rdquo; เพื่อเลือกไฟล์รูปในเครื่อง
           </p>
         </div>
         <div
@@ -115,7 +117,6 @@ export function PhotoCaptureGrid({
         </div>
       </div>
 
-      {/* Rapid Guided Next-Photo Button for Mobile Field Use */}
       {!disabled && nextGuidedCat && (
         <div className="mb-4 bg-slate-900 text-white rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow">
           <div>
@@ -126,24 +127,19 @@ export function PhotoCaptureGrid({
               มุมถัดไป: {PHOTO_CATEGORY_LABELS[nextGuidedCat]}
             </p>
           </div>
-          <label className="cursor-pointer bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold py-2.5 px-4 rounded-xl inline-flex items-center justify-center gap-2 shadow">
+          <button
+            type="button"
+            disabled={uploadingCat !== null}
+            onClick={() => setLiveCameraCat(nextGuidedCat)}
+            className="bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-extrabold py-2.5 px-4 rounded-xl inline-flex items-center justify-center gap-2 shadow"
+          >
             <Camera className="w-4 h-4" />
             <span>
               {uploadingCat === nextGuidedCat
                 ? "กำลังบันทึกรูป..."
-                : `กดถ่าย "${PHOTO_CATEGORY_LABELS[nextGuidedCat]}" ทันที`}
+                : `เปิดกล้องสดถ่าย "${PHOTO_CATEGORY_LABELS[nextGuidedCat]}" ทันที`}
             </span>
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              disabled={uploadingCat !== null}
-              onChange={(e) =>
-                handleFileSelect(nextGuidedCat, e.target.files?.[0])
-              }
-              className="hidden"
-            />
-          </label>
+          </button>
         </div>
       )}
 
@@ -156,12 +152,23 @@ export function PhotoCaptureGrid({
             disabled={disabled}
             isUploading={uploadingCat === cat}
             isNextGuided={nextGuidedCat === cat}
+            onOpenLiveCamera={() => setLiveCameraCat(cat)}
             onFileSelect={(f) => handleFileSelect(cat, f)}
             onDemoPhoto={() => handleDemoPhoto(cat)}
             onDeletePhoto={onDeletePhoto}
           />
         ))}
       </div>
+
+      <LiveCameraModal
+        open={liveCameraCat !== null}
+        docNumber={docNumber}
+        phase={phase}
+        category={liveCameraCat}
+        onClose={() => setLiveCameraCat(null)}
+        onCaptureFile={handleFileSelect}
+        onFallbackDemo={handleDemoPhoto}
+      />
     </section>
   );
 }
