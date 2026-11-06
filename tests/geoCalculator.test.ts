@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import {
+  BRANCH_COORDINATES,
   buildGoogleMapsCoordUrl,
   calculateDistanceKm,
   evaluateBranchDistance,
   extractCoordinatesFromText,
 } from "../src/lib/domain/geoCalculator";
+import { AUTO1_BRANCH_CATALOG } from "../src/lib/data/auto1BranchCatalog";
 
 export function runGeoCalculatorTests(): void {
   console.log("Running Geo Calculator & Branch Distance Tests...");
@@ -43,6 +45,21 @@ export function runGeoCalculatorTests(): void {
   assert.ok(farEval);
   assert.equal(farEval.isOver20Km, true);
   assert.ok(farEval.extraKm > 0);
+
+  // 4. Verify Nationwide AUTO1 Branch Catalog & Staff Demo Data
+  assert.ok(
+    AUTO1_BRANCH_CATALOG.length >= 75,
+    `Expected at least 75 AUTO1 branches, got ${AUTO1_BRANCH_CATALOG.length}`
+  );
+  for (const b of AUTO1_BRANCH_CATALOG) {
+    assert.ok(b.staff.length >= 3, `Branch ${b.code} must have at least 3 demo staff`);
+    assert.ok(BRANCH_COORDINATES[b.code], `Branch ${b.code} must have coordinates`);
+  }
+
+  // Test regional branch distance calculation (e.g. Central Khon Kaen)
+  const kknNear = evaluateBranchDistance("KKN-CEN-KHONKAEN", 16.44, 102.83);
+  assert.ok(kknNear);
+  assert.equal(kknNear.isOver20Km, false);
 
   console.log("✅ All Geo Calculator & Branch Distance Tests Passed!");
 }

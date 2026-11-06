@@ -1,3 +1,5 @@
+import { BRANCH_COORDINATES as CATALOG_COORDINATES } from "../data/auto1BranchCatalog";
+
 export interface GeoPoint {
   lat: number;
   lng: number;
@@ -11,11 +13,7 @@ export interface PlaceSuggestion {
   lng: number;
 }
 
-export const BRANCH_COORDINATES: Record<string, GeoPoint> = {
-  "BKK-RAMA3": { lat: 13.6969, lng: 100.5389 }, // โลตัส พระราม 3
-  "BKK-BANGNA": { lat: 13.6466, lng: 100.6803 }, // เมกา บางนา
-  "NON-CHAENG": { lat: 13.9039, lng: 100.5257 }, // โรบินสัน แจ้งวัฒนะ
-};
+export const BRANCH_COORDINATES: Record<string, GeoPoint> = CATALOG_COORDINATES;
 
 export function buildGoogleMapsCoordUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps?q=${Number(lat.toFixed(6))},${Number(lng.toFixed(6))}`;
